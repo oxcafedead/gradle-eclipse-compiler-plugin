@@ -52,6 +52,34 @@ class EclipseCompilerPluginIntegrationSpec extends Specification {
     }
 
     @Unroll
+    def 'should pass JVM settings to eclipse fork #gradleVersion'() {
+        given:
+        writeHelloWorld("de.set.gradle")
+        buildFile << '''\
+            plugins {
+                id 'de.set.ecj'
+                id 'java'
+            }
+            
+            ecj.ecjJvmArgs = ['-XunknownParam=10G']
+            
+            repositories {
+                jcenter()
+            }
+        '''.stripIndent()
+
+        when:
+        def result = runGradleFail(gradleVersion, 'build', '-i')
+
+        then:
+        result.getOutput().contains('Unrecognized option: -XunknownParam=10G')
+        result.task(':compileJava').outcome == TaskOutcome.FAILED
+
+        where:
+        gradleVersion << GRADLE_VERSIONS
+    }
+
+    @Unroll
     def 'javaCompile output is cachable with Gradle version #gradleVersion'() {
         given:
         writeHelloWorld("de.set.gradle")

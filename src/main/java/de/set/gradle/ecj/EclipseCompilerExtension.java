@@ -8,6 +8,7 @@ public class EclipseCompilerExtension {
   private String toolGroupId;
   private String toolArtifactId;
   private String toolVersion;
+  private Object[] ecjJvmArgs;
 
   
   public String getToolGroupId() {
@@ -32,5 +33,13 @@ public class EclipseCompilerExtension {
 
   public void setToolVersion(String toolVersion) {
     this.toolVersion = toolVersion;
+  }
+
+  public Object[] getEcjJvmArgs() {
+    return ecjJvmArgs;
+  }
+
+  public void setEcjJvmArgs(Object[] ecjJvmArgs) {
+    this.ecjJvmArgs = ecjJvmArgs;
   }
 }

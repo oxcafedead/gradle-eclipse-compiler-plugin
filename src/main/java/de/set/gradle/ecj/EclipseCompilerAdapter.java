@@ -1,7 +1,12 @@
 package de.set.gradle.ecj;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.internal.tasks.compile.CompilationFailedException;
@@ -25,12 +30,14 @@ public class EclipseCompilerAdapter implements Compiler<JavaCompileSpec> {
   private Configuration compilerConfiguration;
   private Project project;
   private String ecjArtifact;
+  private Object[] ecjJvmArgs;
 
   EclipseCompilerAdapter(Configuration compilerConfiguration, Project project) {
     this.compilerConfiguration = compilerConfiguration;
     this.project = project;
     EclipseCompilerExtension extension = project.getExtensions().getByType(EclipseCompilerExtension.class);
-    this.ecjArtifact = extension.getToolGroupId()+":"+extension.getToolArtifactId()+":"+extension.getToolVersion();
+    this.ecjArtifact = extension.getToolGroupId() + ":" + extension.getToolArtifactId() + ":" + extension.getToolVersion();
+    ecjJvmArgs = extension.getEcjJvmArgs();
   }
 
   @Override
@@ -44,14 +51,15 @@ public class EclipseCompilerAdapter implements Compiler<JavaCompileSpec> {
       exec.setWorkingDir(javaCompileSpec.getWorkingDir());
       exec.setClasspath(compilerConfiguration);
       exec.setMain("org.eclipse.jdt.internal.compiler.batch.Main");
+      exec.jvmArgs(ecjJvmArgs);
       exec.args(shortenArgs(javaCompileSpec.getTempDir(), remainingArguments));
     });
 
     if (result.getExitValue() != 0) {
-      try { 
-        result.rethrowFailure(); 
-      } catch (ExecException e) { 
-        throw new CompilationFailedException(e); 
+      try {
+        result.rethrowFailure();
+      } catch (ExecException e) {
+        throw new CompilationFailedException(e);
       }
     }
 
